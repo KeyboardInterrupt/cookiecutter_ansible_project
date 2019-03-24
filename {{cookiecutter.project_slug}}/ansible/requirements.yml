@@ -1,0 +1,4 @@
+# Ansible Requirements File for {{ cookiecutter.project_name }}
+#
+# ansible-galaxy install -r requirements.yml -p roles -f
+#

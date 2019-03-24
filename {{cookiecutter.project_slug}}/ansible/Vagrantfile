@@ -1,0 +1,42 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  default = { :box => "{{ cookiecutter.vagrant_image }}", :memory => {{ cookiecutter.vagrant_memory }}, :cpus => {{ cookiecutter.vagrant_cpus }} }
+  boxes = [
+{% for n in range(cookiecutter.vagrant_box_count|int) %}
+    { :name => "box{{ '%02d' % n }}", :ip => "192.168.29.{{ '%02d' % (n + 10) }}" },{% endfor %}
+  ]
+  groups = {
+      "example_group" => [{% for n in range(cookiecutter.vagrant_box_count|int) %}"box{{ '%02d' % n }}",{% endfor %}],
+    }
+
+  boxes.each do |opts|
+    config.vm.define opts[:name] do |config|
+      config.vm.box = opts[:box] || default[:box]
+      config.vm.hostname = opts[:name]
+      config.vm.network "private_network", ip: opts[:ip]
+      config.vm.provider :virtualbox do |v|
+        v.memory = opts[:memory] || default[:memory]
+        v.cpus = opts[:cpus] || default[:cpus]
+      end
+      config.vm.provider :libvirt do |v|
+        v.memory = opts[:memory] || default[:memory]
+        v.cpus = opts[:cpus] || default[:cpus]
+      end
+      if opts[:name] == boxes.last[:name]
+        config.vm.provision "ansible" do |ansible|
+          if ENV['BOOTSTRAP_VAGRANT'] == "True"
+            ansible.playbook = "inventories/vagrant/vagrant_bootstrap.yml"
+          else
+            ansible.inventory_path = "inventories/vagrant/hosts"
+            ansible.playbook = "site.yml"
+          end
+          ansible.limit = "all"
+          ansible.groups = groups || {}
+        end
+      end
+    end
+  end
+end

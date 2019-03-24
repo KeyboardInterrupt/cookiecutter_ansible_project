@@ -1,0 +1,11 @@
+
+{
+    "project_name": "Name of the project",
+    "project_slug": "{{ cookiecutter.project_name.lower().strip().replace(' ', '_') }}",
+    "project_short_description": "A short description of the project",
+
+    "vagrant_image": "geerlingguy/ubuntu1804",
+    "vagrant_memory": 256,
+    "vagrant_cpus": 1,
+    "vagrant_box_count": 3
+}
